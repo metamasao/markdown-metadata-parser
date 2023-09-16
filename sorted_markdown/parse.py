@@ -9,14 +9,8 @@ def parse_markdown(filename):
     with open(f"{MARKDOWN_DIRECTORY}/{filename}") as f:
         content = f.read()
         check_is_metadata(content)
-        return get_basic_metadata(content)
+        return MarkdownMetadata.create_metadata(content)
 
-def get_basic_metadata(content):
-    metadata = content.split("---", maxsplit=2)[1]
-    metadata = {
-        data.split(":")[0]: data.split(":", maxsplit=1)[1].lstrip() for data in metadata.split("\n") if data != ""
-    }
-    return DictForSortedMetadata(metadata)
 
 def check_is_metadata(content):
     metadata = re.search("(-){3}", content)
@@ -24,8 +18,21 @@ def check_is_metadata(content):
     return True
 
 
-class DictForSortedMetadata(dict):
+class MarkdownMetadata(dict):
 
     def __getitem__(self, key):
         item = super().__getitem__(key)
         return datetime.fromisoformat(item) if key == "datetime" else item
+
+    @classmethod
+    def create_metadata(cls, content):
+        content = get_basic_metadata(content)
+        return cls(content)
+    
+
+def get_basic_metadata(content):
+    metadata = content.split("---", maxsplit=2)[1]
+    metadata = {
+        data.split(":")[0]: data.split(":", maxsplit=1)[1].lstrip() for data in metadata.split("\n") if data != ""
+    }
+    return metadata
