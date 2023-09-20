@@ -25,4 +25,4 @@ def _build_template_markdown():
 
 
 if __name__ == "__main__":
-    sorted_markdowns("../markdowns")
+    print(sorted_markdowns("../markdowns"))
