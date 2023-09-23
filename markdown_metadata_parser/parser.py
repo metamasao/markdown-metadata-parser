@@ -14,13 +14,17 @@ def sorted_markdowns(markdown_dir):
 
 
 def create_markdown_metadata(filename):
-    with open(filename) as f:
+    with open(filename, mode="+") as f:
         markdown_parser = MarkdownParser(filename=filename, content=f.read())
-        markdown_parser.is_metadata()
+        markdown_parser.has_metadata()
         metadata_dict = markdown_parser.parse_markdown()
 
         metadata = MarkdownMetadata(metadata_dict=metadata_dict, filename=filename)
-        return metadata.validate_metadata_datetime()
+        metadata.validate_metadata_datetime()
+
+        # if metadata.datetime_data_added:
+        #     f.write()
+        return metadata
 
 
 class MarkdownMetadata(dict):
@@ -29,6 +33,11 @@ class MarkdownMetadata(dict):
         item = super().__getitem__(key)
         return datetime.fromisoformat(item) if key == "created" or key == "updated" else item
     
+    def __setitem__(self, key, item):
+        if key == "created" or key == "updated":
+            self.datetime_data_added = True
+        super().__setitem__(key, item)
+
     def __missing__(self, key):
         value = "not defined"
         if not (key == "created" or key == "updated"): 
@@ -41,6 +50,7 @@ class MarkdownMetadata(dict):
     
     def __init__(self, metadata_dict, filename=None):
         self.filename = filename
+        self.datetime_data_added = False
         super().__init__(metadata_dict)
     
     def validate_metadata_datetime(self):
@@ -57,19 +67,30 @@ def _validate_metadata_datetime(datetime_item):
     
 class MarkdownParser:
     
-    def __init__(self, filename, content):
+    def __init__(self, content, filename=None):
         self.filename = filename
         self.content = content
+        self.content_body = None
 
-    def is_metadata(self):
+    def has_metadata(self):
         metadata = re.search(r"---(.+:.+)+---", self.content, re.DOTALL)
         if not metadata: raise MetadataNotFoundError(f"Metadata is not found in this {self.filename}")
         return True
 
     def parse_markdown(self):
-        metadata = self.content.split("---", maxsplit=2)[1]
-        metadata = filter(lambda data: data != "", metadata.split("\n"))
-        return {data.split(":")[0]: data.split(":", maxsplit=1)[1].lstrip() for data in metadata}
+        content = self.content.split("---", maxsplit=2)
+        metadata = content[1]
+        self.content_body = content[2]
+        
+        metadata_dict = filter(lambda data: data != "", metadata.split("\n"))
+        metadata_dict = {data.split(":")[0]: data.split(":", maxsplit=1)[1].lstrip() for data in metadata_dict}
+        return metadata_dict
     
-    def serialize(self):
-        pass
+    def concatenate_new_metadata_and_content_body(self, new_metadata):
+        from collections import deque
+
+        metadata_format_str = deque([f"{key}: {item}\n" for key, item in new_metadata.items()])
+        metadata_format_str.appendleft("---\n")
+        metadata_format_str.append("---\n")
+        metadata_format_str.append(self.content_body)
+        return "".join(metadata_format_str)
