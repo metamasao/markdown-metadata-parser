@@ -1,6 +1,6 @@
 import sys
 
-from sort import sorted_markdowns
+from markdown_metadata_parser.parser import sorted_markdowns
 
 
 def build():
