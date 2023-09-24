@@ -1,0 +1,19 @@
+name: Markdown metadata parser workflow
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Test Markdown metadata parser
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.10'
+    - name: Install requirements
+      run: pip install -r requirements/development.txt
+    - name:
+      run: coverage run -m unittest
+    - name:
+      uses: codecov/codecov-action@v3
