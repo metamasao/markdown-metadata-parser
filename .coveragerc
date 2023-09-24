@@ -1,0 +1,10 @@
+[run]
+branch = True
+
+[report]
+omit =
+    */tests/*
+    *__init__.py*
+    *build.py*
+    *decorator.py*
+    *utils.py*

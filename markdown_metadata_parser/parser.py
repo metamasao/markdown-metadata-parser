@@ -1,7 +1,6 @@
 import re
 import os
 from datetime import datetime
-from typing import Any
 
 from markdown_metadata_parser.exceptions import MetadataNotFoundError, DatetimeDataNotFoundError, DatetimeDataFormatIsIncorrect
 from markdown_metadata_parser.config import logger, MARKDOWN_DIRECTORY
@@ -17,10 +16,9 @@ def create_markdown_metadata(filename):
     with open(filename, mode="+") as f:
         markdown_parser = MarkdownParser(filename=filename, content=f.read())
         markdown_parser.has_metadata()
-        metadata_dict = markdown_parser.parse_markdown()
+        metadata_dict = markdown_parser.parse()
 
         metadata = MarkdownMetadata(metadata_dict=metadata_dict, filename=filename)
-        metadata.validate_metadata_datetime()
 
         # if metadata.datetime_data_added:
         #     f.write()
@@ -39,7 +37,7 @@ class MarkdownParser:
         if not metadata: raise MetadataNotFoundError(f"Metadata is not found in this {self.filename}")
         return True
 
-    def parse_markdown(self):
+    def parse(self):
         content = self.content.split("---", maxsplit=2)
         metadata = content[1]
         self.content_body = content[2]
@@ -53,7 +51,7 @@ class MarkdownParser:
 
         metadata_format_str = deque([f"{key}: {item}\n" for key, item in new_metadata.items()])
         metadata_format_str.appendleft("---\n")
-        metadata_format_str.append("---\n")
+        metadata_format_str.append("---")
         metadata_format_str.append(self.content_body)
         return "".join(metadata_format_str)
 
