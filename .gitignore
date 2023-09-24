@@ -1,4 +1,7 @@
 markdowns
+htmlcov
+.coverage
 
 __pycache__
 .venv
+

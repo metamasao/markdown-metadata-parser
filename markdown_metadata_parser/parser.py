@@ -27,44 +27,6 @@ def create_markdown_metadata(filename):
         return metadata
 
 
-class MarkdownMetadata(dict):
-
-    def __getitem__(self, key):
-        item = super().__getitem__(key)
-        return datetime.fromisoformat(item) if key == "created" or key == "updated" else item
-    
-    def __setitem__(self, key, item):
-        if key == "created" or key == "updated":
-            self.datetime_data_added = True
-        super().__setitem__(key, item)
-
-    def __missing__(self, key):
-        value = "not defined"
-        if not (key == "created" or key == "updated"): 
-            self[key] = value
-            return value
-        
-        value = datetime.now().isoformat(" ", timespec="seconds")
-        self[key] = value
-        return value
-    
-    def __init__(self, metadata_dict, filename=None):
-        self.filename = filename
-        self.datetime_data_added = False
-        super().__init__(metadata_dict)
-    
-    def validate_metadata_datetime(self):
-        result = list(map(_validate_metadata_datetime, [self["created"], self["updated"]]))
-        if None in result:
-            raise DatetimeDataFormatIsIncorrect(
-            f"Datetime format is incorrect {self.filename}.\nWrite metadata following the rule\n'yyyy-mm-dd hh:mm:ss'"
-        )
-        return self
-    
-def _validate_metadata_datetime(datetime_item):
-    return re.match(r"^(\d){4}-(\d){2}-(\d){2} (\d){2}:(\d){2}:(\d){2}$", str(datetime_item))
-        
-    
 class MarkdownParser:
     
     def __init__(self, content, filename=None):
@@ -94,3 +56,42 @@ class MarkdownParser:
         metadata_format_str.append("---\n")
         metadata_format_str.append(self.content_body)
         return "".join(metadata_format_str)
+
+
+class MarkdownMetadata(dict):
+
+    def __init__(self, metadata_dict, filename=None):
+        super().__init__(metadata_dict)
+        self.filename = filename
+        self.datetime_data_added = False
+
+    def __getitem__(self, key):
+        item = super().__getitem__(key)
+        if not(key == "created" or key == "updated"):
+            return item
+        
+        datetime_item = self._validate_metadata_datetime(datetime_item=item)
+        return datetime.fromisoformat(datetime_item)
+    
+    def __setitem__(self, key, item):
+        if key == "created" or key == "updated":
+            self.datetime_data_added = True
+        super().__setitem__(key, item)
+
+    def __missing__(self, key):
+        value = "not defined"
+        if not (key == "created" or key == "updated"): 
+            self[key] = value
+            return value
+        
+        value = datetime.now().isoformat(" ", timespec="seconds")
+        self[key] = value
+        return value
+    
+    def _validate_metadata_datetime(self, datetime_item):
+        if re.match(r"^(\d){4}-(\d){2}-(\d){2} (\d){2}:(\d){2}:(\d){2}$", datetime_item) is None:
+            raise DatetimeDataFormatIsIncorrect(
+            f"Datetime format {datetime_item} is incorrect {self.filename}.\nWrite metadata following the rule\n'yyyy-mm-dd hh:mm:ss'"
+            )
+        return datetime_item
+    
