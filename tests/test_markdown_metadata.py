@@ -1,16 +1,19 @@
 from unittest import TestCase
 from datetime import datetime
 
-from markdown_metadata_parser.parser import MarkdownMetadata
+from markdown_metadata_parser.parser import MarkdownMetadata, _validate_datetime_format
 from markdown_metadata_parser.exceptions import DatetimeDataFormatIsIncorrect
 
 
 class TestMarkdwonMetadata(TestCase):
 
-    def test_str_to_datetime_when_getting_item(self):
+    def test__getitem__str_to_datetime_when_getting_item(self):
         # arrange
         markdown_metadata = MarkdownMetadata(
-            {"created": "2023-01-01 00:00:00", "update": "2023-02-02 00:00:00"}
+            {
+                "created": "2023-01-01 00:00:00", 
+                "updated": "2023-02-02 00:00:00"
+            }
         )
 
         # act
@@ -21,58 +24,135 @@ class TestMarkdwonMetadata(TestCase):
         self.assertEqual(isinstance(created_value, datetime), True)
         self.assertEqual(isinstance(updated_value, datetime), True)
 
-    def test_created_datetime_created_by_missing_method(self):
+    def test__setitem__given_datetime_data(self):
         # arrange
-        markdown_metadata = MarkdownMetadata({})
+        markdown_metadata = MarkdownMetadata(metadata_dict={})
+        before_datetime_added = markdown_metadata.datetime_data_added
 
         # act
-        initial_created_value = "created" in markdown_metadata.keys()
-        markdown_metadata["created"]
-        after_created_value = "created" in markdown_metadata.keys()
+        markdown_metadata["created"] = datetime.now().isoformat(" ", timespec="seconds")
+        after_datetime_added = markdown_metadata.datetime_data_added
 
         # assert
-        self.assertEqual(initial_created_value, False)
-        self.assertEqual(after_created_value, True)
-    
-    def test_updated_datetime_created_by_missing_method(self):
+        self.assertEqual(before_datetime_added, False)
+        self.assertEqual(after_datetime_added, True)
+        self.assertEqual("created" in markdown_metadata, True)
+
+    def test__setitem__given_data_other_than_datetime_data(self):
         # arrange
-        markdown_metadata = MarkdownMetadata({})
+        markdown_metadata = MarkdownMetadata(metadata_dict={})
+        before_item_added = markdown_metadata.datetime_data_added
 
         # act
-        initial_updated_value = "updated" in markdown_metadata.keys()
-        markdown_metadata["updated"]
-        after_updated_value = "updated" in markdown_metadata.keys()
+        markdown_metadata["test"] = "test"
+        after_item_added = markdown_metadata.datetime_data_added
 
         # assert
-        self.assertEqual(initial_updated_value, False)
-        self.assertEqual(after_updated_value, True)
+        self.assertEqual(before_item_added, False)
+        self.assertEqual(after_item_added, False)
+        self.assertEqual("created" in markdown_metadata or "updated" in markdown_metadata, False)
 
-    def test_not_defined_created_by_missing_method(self):
+    def test__updated_metadata_with_datetime_data_given_datetime_data(self):
         # arrange
-        markdwon_metadata = MarkdownMetadata({})
+        markdown_metadata = MarkdownMetadata(
+            {
+                "created": "2023-01-01 00:00:00",
+                "updated": "2023-01-01 00:00:00"
+            }
+        )
 
         # act
-        inital_value = "test" in markdwon_metadata.keys()
-        item_value = markdwon_metadata["test"]
-        after_value = "test" in markdwon_metadata.keys()
+        updated, markdown_metadata = markdown_metadata._update_metadata_with_datetime_data()
 
         # assert
-        self.assertEqual(inital_value, False)
-        self.assertEqual(after_value, True)
-        self.assertEqual(item_value, "not defined")
+        self.assertEqual(updated, False)
 
-    def test_validate_metadata_datetime_when_given_invalid_format(self):
+    def test__updated_metadata_with_datetime_data_without_datetime_data(self):
         # arrange
-        invalid_datetime_format_long = "2023-01-01 00:00:000"
-        invalid_datetime_format_short = "2023-01-01 00:00:0"
-        markdown_metadata = MarkdownMetadata({})
+        markdown_metadata = MarkdownMetadata(metadata_dict={})
+
+        # act
+        updated, markdown_metadata = markdown_metadata._update_metadata_with_datetime_data()
+
+        # assert
+        self.assertEqual(updated, True)
+        self.assertEqual("created" in markdown_metadata and "updated" in markdown_metadata, True)
+        self.assertEqual(isinstance(markdown_metadata["created"], datetime), True)
+
+    def test_create_metadata_without_datetime_data(self):
+        # arrange
+        markdown_metadata = MarkdownMetadata.create_metadata(metadata_dict={})
         
-        # act        
-        with self.assertRaises(DatetimeDataFormatIsIncorrect) as cm_long:
-            markdown_metadata._validate_metadata_datetime(invalid_datetime_format_long)
-        with self.assertRaises(DatetimeDataFormatIsIncorrect) as cm_short:
-            markdown_metadata._validate_metadata_datetime(invalid_datetime_format_short)
+        # act
+        is_created_and_updated = "created" in markdown_metadata and "updated" in markdown_metadata
+        is_created_isinstance_of_datetime = isinstance(markdown_metadata["created"], datetime)
 
         # assert
-        self.assertEqual(isinstance(cm_long.exception, DatetimeDataFormatIsIncorrect), True)
-        self.assertEqual(isinstance(cm_short.exception, DatetimeDataFormatIsIncorrect), True)
+        self.assertEqual(is_created_and_updated, True)
+        self.assertEqual(is_created_isinstance_of_datetime, True)
+        self.assertEqual(markdown_metadata.datetime_data_added, True)
+
+    def test_create_metadata_with_valid_datetime_data(self):
+        # arrange
+        markdown_metadata = MarkdownMetadata.create_metadata(
+            {
+                "created": "2023-01-01 00:00:00",
+                "updated": "2023-01-02 00:00:00"
+            }
+        )
+
+        # act
+        is_created_isinstance_of_datetime = isinstance(markdown_metadata["created"], datetime)
+
+        # assert
+        self.assertEqual(is_created_isinstance_of_datetime, True)
+        self.assertEqual(markdown_metadata.datetime_data_added, False)
+
+
+    def test_create_metadata_with_invalid_datetime_data(self):
+        # arrange
+        metadata_dict_with_invalid_datetime_format = {
+            "created": "2023-01-01 00:00:0",
+            "updated": "2023-01-02 00:00:000"
+        }
+
+        # act
+        with self.assertRaises(DatetimeDataFormatIsIncorrect) as cm:
+            MarkdownMetadata.create_metadata(
+                metadata_dict=metadata_dict_with_invalid_datetime_format
+            )
+
+        # assert
+        self.assertEqual(isinstance(cm.exception, DatetimeDataFormatIsIncorrect), True)
+
+    def test__validate_datetime_format_given_too_short(self):
+        # arrange
+        too_short_datetime_format = "2023-01-01 00:00:0"
+
+        # act
+        retruned_format = _validate_datetime_format(too_short_datetime_format)
+
+        # assert
+        self.assertEqual(retruned_format, None)
+
+    def test__validate_datetime_format_given_too_long(self):
+        # arrange
+        too_long_datetime_format = "2023-01-01 00:00:000"
+
+        # act
+        retruned_format = _validate_datetime_format(too_long_datetime_format)
+
+        # assert
+        self.assertEqual(retruned_format, None)
+
+    def test__validate_datetime_format_given_valid_format(self):
+        # arrange
+        valid_datetime_format = "2023-01-01 00:00:00"
+        
+        # act
+        returned_format = _validate_datetime_format(valid_datetime_format)
+
+        # assert
+        self.assertEqual(returned_format[0], "2023-01-01 00:00:00")
+
+
