@@ -1,7 +1,7 @@
 from unittest import TestCase
 from datetime import datetime
 
-from markdown_metadata_parser.parser import MarkdownMetadata, _validate_datetime_format
+from markdown_metadata_parser.metadata import MarkdownMetadata, _validate_datetime_format
 from markdown_metadata_parser.exceptions import DatetimeDataFormatIsIncorrect
 
 

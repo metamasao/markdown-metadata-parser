@@ -8,3 +8,5 @@ omit =
     *build.py*
     *decorator.py*
     *utils.py*
+    *config.py*
+    *exceptions.py*
