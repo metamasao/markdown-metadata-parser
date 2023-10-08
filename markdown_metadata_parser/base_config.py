@@ -1,4 +1,5 @@
 import os
+import sys
 import importlib.util
 import logging
 
@@ -17,18 +18,15 @@ logger.addHandler(console_handler)
 
 # ---------------markdown directory config-------------
 def get_config():
-    if (spec := importlib.util.find_spec("config")) is None:
-        logger.info(
-            """
-            config.py is not found in your project directory.
-            Please create 'config.py' file 
-            and specify markwodn directory and metadata directory.
-            """
-        )
+    spec = importlib.util.spec_from_file_location("config", f"{os.getcwd()}/config.py")
     config_module = importlib.util.module_from_spec(spec=spec)
-    spec.loader.exec_module(config_module)
+    try:
+        spec.loader.exec_module(config_module)
+    except FileNotFoundError as err:
+        logger.info("config.py is not found in your project directory.", exc_info=err)
+        sys.exit()
     return config_module
 
-config_in_project_directory = get_config()    
+config_in_project_directory = get_config()   
 markdown_directory = config_in_project_directory.MARKDOWN_DIRECTORY
 metadata_directory = config_in_project_directory.METADATA_DIRECTORY

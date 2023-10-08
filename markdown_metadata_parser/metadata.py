@@ -1,7 +1,7 @@
 import re
 from datetime import datetime
 
-from markdown_metadata_parser.exceptions import DatetimeDataFormatIsIncorrect
+from exceptions import DatetimeDataFormatIsIncorrect
 
 
 class MarkdownMetadata(dict):
