@@ -2,7 +2,7 @@ import re
 import os
 import logging
 
-from exceptions import MetadataNotFoundError
+from .exceptions import MetadataNotFoundError
 
 logger = logging.getLogger("markdown_metadata_parser.parser")
 
