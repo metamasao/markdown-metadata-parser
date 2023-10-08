@@ -1,8 +1,10 @@
 import re
 import os
+import logging
 
 from markdown_metadata_parser.exceptions import MetadataNotFoundError
-from markdown_metadata_parser.config import logger, MARKDOWN_DIRECTORY
+
+logger = logging.getLogger("markdown_metadata_parser.parser")
 
 
 class MarkdownParser:
