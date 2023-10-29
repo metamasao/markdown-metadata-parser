@@ -1,10 +1,31 @@
+import os
 import sys
+from argparse import ArgumentParser
 
-from markdown_metadata_parser.parser import sorted_markdowns
+import base_config
 
 
 def build():
-    print(sys.argv[1])
+    # print(base_config.markdown_directory)
+    parser = ArgumentParser()
+    parser.add_argument(
+        "--new-project", 
+        help="create a file for configuration to start a project",
+        action="store_true"
+    )
+    parser.add_argument(
+        "--make-template",
+        help="create a markdown file based on a template file",
+        action="store_true"
+    )
+    args = parser.parse_args()
+
+    if args.new_project:
+        print("project has begun!")
+    if args.make_template:
+        print("creating template!")
+    
+    
 
 
 def _build_new():
@@ -25,4 +46,4 @@ def _build_template_markdown():
 
 
 if __name__ == "__main__":
-    print(sorted_markdowns("../markdowns"))
+    build()

@@ -16,7 +16,8 @@ class MarkdownParser:
 
     def has_metadata(self):
         metadata = re.search(r"---(.+:.+)+---", self.content, re.DOTALL)
-        if not metadata: raise MetadataNotFoundError(f"Metadata is not found in this {self.filename}")
+        if not metadata: 
+            raise MetadataNotFoundError(f"Metadata is not found in this {self.filename}")
         return True
 
     def parse(self):

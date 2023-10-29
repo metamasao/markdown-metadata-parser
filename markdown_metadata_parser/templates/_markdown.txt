@@ -1,0 +1,8 @@
+---
+title: {{ title }}
+created: {{ created }}
+updated: {{ updated }}
+---
+
+# Your Awesome Heading!
+

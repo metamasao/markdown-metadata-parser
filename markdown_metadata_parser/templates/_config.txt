@@ -1,0 +1,11 @@
+
+
+# ====================basic config====================
+
+# Setting "LOGGING_SET_LEVEL = logging.DEBUG" allows loggers record more logs in detail.
+# LOGGING_SET_LEVEL = logging.DEBUG
+
+
+# ====================markdwon metadata config====================
+MARKDOWN_DIRECTORY = {{ markdown_directory }}
+METADATA_DIRECTORY = {{ metadata_directory }}
