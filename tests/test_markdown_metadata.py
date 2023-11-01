@@ -2,7 +2,7 @@ from unittest import TestCase
 from datetime import datetime
 
 from markdown_metadata_parser.metadata import MarkdownMetadata, _validate_datetime_format
-from markdown_metadata_parser.exceptions import DatetimeDataFormatIsIncorrect
+from markdown_metadata_parser.errors import DatetimeDataFormatIsIncorrect
 
 
 class TestMarkdwonMetadata(TestCase):
@@ -113,13 +113,14 @@ class TestMarkdwonMetadata(TestCase):
         # arrange
         metadata_dict_with_invalid_datetime_format = {
             "created": "2023-01-01 00:00:0",
-            "updated": "2023-01-02 00:00:000"
+            "updated": "2023-01-02 00:00:000",
         }
 
         # act
         with self.assertRaises(DatetimeDataFormatIsIncorrect) as cm:
             MarkdownMetadata.create_metadata(
-                metadata_dict=metadata_dict_with_invalid_datetime_format
+                metadata_dict=metadata_dict_with_invalid_datetime_format,
+                filename="test filename"
             )
 
         # assert

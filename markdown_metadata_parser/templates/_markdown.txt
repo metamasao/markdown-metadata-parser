@@ -1,5 +1,6 @@
 ---
 title: {{ title }}
+filename: {{ filename }}
 created: {{ created }}
 updated: {{ updated }}
 ---

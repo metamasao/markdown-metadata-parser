@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 from markdown_metadata_parser.parser import MarkdownParser
-from markdown_metadata_parser.exceptions import MetadataNotFoundError
+from markdown_metadata_parser.errors import MetadataNotFoundError
 
 
 class TestMarkdownParser(TestCase):
@@ -20,7 +20,7 @@ class TestMarkdownParser(TestCase):
     def test_has_metadata_given_invalid_content(self):
         # arrange
         invalid_content = "--\ntitle: test title\ntags: tag1,tag2\n--\n# Test Heading1"
-
+        
         # act
         markdown_parser = MarkdownParser(content=invalid_content)
         with self.assertRaises(MetadataNotFoundError) as cm:

@@ -2,7 +2,7 @@ import re
 import os
 import logging
 
-from .exceptions import MetadataNotFoundError
+from markdown_metadata_parser.errors import MetadataNotFoundError
 
 logger = logging.getLogger("markdown_metadata_parser.parser")
 
@@ -15,8 +15,9 @@ class MarkdownParser:
         self.content_body = None
 
     def has_metadata(self):
+        logger.debug(self.content)
         metadata = re.search(r"---(.+:.+)+---", self.content, re.DOTALL)
-        if not metadata: 
+        if not metadata:
             raise MetadataNotFoundError(f"Metadata is not found in this {self.filename}")
         return True
 
@@ -35,6 +36,8 @@ class MarkdownParser:
         metadata_format_str = deque([f"{key}: {item}\n" for key, item in new_metadata.items()])
         metadata_format_str.appendleft("---\n")
         metadata_format_str.append("---")
+        
+        logger.debug(f"self.content_body:\n{self.content_body}")
         metadata_format_str.append(self.content_body)
         return "".join(metadata_format_str)
     

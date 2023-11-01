@@ -9,4 +9,4 @@ omit =
     *decorator.py*
     *utils.py*
     *config.py*
-    *exceptions.py*
+    *errors.py*
